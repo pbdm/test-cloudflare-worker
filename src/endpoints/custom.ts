@@ -45,17 +45,31 @@ export class Custom extends OpenAPIRoute {
 
 	async handle(c: AppContext) {
 
-		const headers = c.req.raw.headers
-		headers.delete("If-None-Match");
-    headers.delete("If-Modified-Since");
-    headers.delete("If-Match");
-		
 		const data = await this.getValidatedData<typeof this.schema>();
 		const { url } = data.params;
-		// 示例 URL
-		// const url = `https://api.live.bilibili.com/xlive/web-ucenter/v1/user_title/GetTitles`;
 
-		const resp = await fetch(decodeURIComponent(url));
+		const originalRequest = c.req.raw
+
+		// 拷贝一份可变的 headers
+		const headers = new Headers(originalRequest.headers)
+
+		// 删除条件请求头
+		headers.delete('If-None-Match')
+		headers.delete('If-Modified-Since')
+		headers.delete('If-Match')
+
+		// 构造一个新的 Request（Hono 的 c.req.raw 是 immutable 的，所以必须新建）
+		const newRequest = new Request(decodeURIComponent(url), {
+			method: originalRequest.method,
+			headers,
+			body: originalRequest.body,  
+		})
+
+		// 发送请求
+		const resp = await fetch(newRequest)
+		
+
+		// const resp = await fetch(decodeURIComponent(url));
 
 		if (!resp.ok) {
 			return Response.json({
