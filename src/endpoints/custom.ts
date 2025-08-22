@@ -50,6 +50,7 @@ export class Custom extends OpenAPIRoute {
 			const { url } = data.params;
 			// 示例 URL
 			// const url = `https://api.live.bilibili.com/xlive/web-ucenter/v1/user_title/GetTitles`;
+
 			const resp = await fetch(decodeURIComponent(url));
 
 			if (!resp.ok) {
@@ -59,6 +60,9 @@ export class Custom extends OpenAPIRoute {
 				}, { status: resp.status });
 			}
 			const ret = await resp.json();
+
+			const responseHeaders = Object.fromEntries(resp.headers)
+  		console.log('源站响应头:', responseHeaders)
 
 			// 直接返回外部接口内容
 			return {
